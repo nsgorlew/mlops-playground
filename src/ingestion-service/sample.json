@@ -1,0 +1,24 @@
+{
+	"id": "113af3",
+	"highBP": 1, //0 not high bp, 1 is high
+	"highChol": 0, //1 means high cholesterol
+	"cholCheck": 1, //yes chol check in 5 years
+	"bmi": 29,
+	"smoker": 0,
+	"stroke": 0,
+	"heartDiseaseOrAttack": 0,
+	"physicalActivity": 1, //physical activity in the past 30 days
+	"fruits": 1, //consume fruits
+	"veggies": 1, //consume vegetables 1 or more times per day
+	"heavyAlcoholConsumption": 0, //14 or more drinks per week
+	"anyHealthCare": 1,
+	"noDocBecauseOfCost": 0, //past 12 months, couldn't see a doctor because of cost?
+	"generalHealthSelfAssessment": 2, // 1 is best 5 is worst
+	"mentalHealthIssues": 0, // how many days out of past 30 have mental health problems?
+	"physicalHealthIssues": 2, //how many days out of past 30 did you have physical health issues?
+	"difficultyWalking": 0,
+	"sex": 0, //0 is female, 1 is male
+	"age": 9,
+	"education": 6, //6 means 4 or more years of university
+	"income": 8 //8 means 75k or more per year
+}
