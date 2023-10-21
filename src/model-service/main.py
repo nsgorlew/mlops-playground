@@ -1,7 +1,9 @@
-from fastapi import Request, FastAPI
+from fastapi import Request, FastAPI, Response, HTTPException
+from inference import ModelInference
 from pydantic import BaseModel
-from utilities.persistence import Persist
-from utilities.request_handling import RequestHandler
+from utilities.encoding import NumPyEncoder
+# from utilities.persistence import Persist
+# from utilities.request_handling import RequestHandler
 import json
 import structlog
 from structlog.contextvars import (
@@ -22,22 +24,22 @@ logger = structlog.get_logger()
 
 @app.post("/model")
 async def invoke(request: Request):
-    try:
-    	# clear the context variables for each request
-    	clear_contextvars()
-    	# get trace id and json data from request
-    	trace = request.headers.get("trace")
-    	data = await request.json()
+	# clear the context variables for each request
+	clear_contextvars()
 
-    	bind_contextvars(traceID=trace)
-    	
-        
-    except Exception as exc:
-    	logger.error("Persistence failed", exc_info=True)
+	# get trace id and json data from request
+	trace = request.headers.get("trace")
+	data = await request.json()
 
-    	return {"error": "fix"}
-    # TODO: send data to model service
-    return await request.json()
+	bind_contextvars(traceID=trace)
+
+	try:
+		result = ModelInference().predict(model_file="diabetes_model_1_0_0.md", data=data)
+		return Response(status_code=200, content=json.dumps(result, cls=NumPyEncoder))
+	except KeyError as ke:
+		logger.exception(f"Key {ke} not in request body")
+		raise HTTPException(status_code=400, detail=f"{str(ke)} not in request body")
+
 
 @app.get("/ping")
 async def check():

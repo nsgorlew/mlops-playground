@@ -1,6 +1,7 @@
 from fastapi import Request, FastAPI
 from pydantic import BaseModel
 from utilities.persistence import Persist
+from utilities.request_handling import RequestHandler
 import json
 import structlog
 from structlog.contextvars import (
@@ -19,7 +20,7 @@ configure(processors=[merge_contextvars, structlog.processors.JSONRenderer()])
 logger = structlog.get_logger()
 
 
-@app.post("/invoke")
+@app.post("/ingest")
 async def invoke(request: Request):
     try:
     	# clear the context variables for each request
@@ -31,8 +32,11 @@ async def invoke(request: Request):
         # persist data in lake
     	bind_contextvars(traceID=trace)
     	logger.info("Persisting data...")
-    	Persist.push(data, local=True)
-    	# logger.info(f"data for {data['appID']} persisted")
+    	persistence_result = Persist.push(data, local=True)
+        if not persistence_result:
+            raise Exception
+
+        downstream_response = RequestHandler.post()
     except Exception as exc:
     	logger.error("Persistence failed", exc_info=True)
 
