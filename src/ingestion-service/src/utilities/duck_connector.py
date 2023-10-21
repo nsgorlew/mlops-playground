@@ -26,6 +26,4 @@ class DuckConnector:
 		con = duckdb.connect(f"{database_name}.db")
 		query_result = con.sql(query)
 		return query_result
-
-	def insert(database_name, table_name, data):
 		
