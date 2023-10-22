@@ -1,12 +1,7 @@
 from preprocessing.preprocessor import Preprocessor
 from sklearn.metrics import roc_auc_score
-import joblib
-import pandas as pd
 import xgboost as xgb
-import json
 import structlog
-import os
-
 
 logger = structlog.get_logger()
 

@@ -1,6 +1,5 @@
 from fastapi import Request, FastAPI, Response, HTTPException
 from inference import ModelInference
-from pydantic import BaseModel
 from utilities.encoding import NumPyEncoder
 # from utilities.persistence import Persist
 # from utilities.request_handling import RequestHandler
@@ -8,10 +7,8 @@ import json
 import structlog
 from structlog.contextvars import (
     bind_contextvars,
-    bound_contextvars,
     clear_contextvars,
     merge_contextvars,
-    unbind_contextvars,
 )
 
 from structlog import configure
