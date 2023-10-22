@@ -1,9 +1,10 @@
-from sklearn.preprocessing import LabelEncoder
+# from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from ucimlrepo import fetch_ucirepo
 
-import polars as pl
-import structlog
+# import polars as pl
+import pandas as pd
+
 
 class Preprocessor:
     
@@ -14,13 +15,42 @@ class Preprocessor:
     def run():
         cdc_diabetes_health_indicators = fetch_ucirepo(id=891) 
           
-        X = cdc_diabetes_health_indicators.data.features 
+        X = Preprocessor.convert_feature_names(cdc_diabetes_health_indicators.data.features)
         y = cdc_diabetes_health_indicators.data.targets
 
-        # df = cleaned.slice(0,200000).sample(n=200000, shuffle=True)
+        print(X.head)
         # split into train and test
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-        return X_train, X_test, y_train, y_test
+        return X_train.to_numpy(), X_test.to_numpy(), y_train.to_numpy(), y_test.to_numpy()
+
+    @staticmethod
+    def convert_feature_names(training_x):
+        # improve readability and make valid JSON
+        feature_map = {
+            "HighBP": "highBP",
+            "HighChol": "highChol",
+            "CholCheck": "cholCheck",
+            "BMI": "bmi",
+            "Smoker": "smoker",
+            "Stroke": "stroke",
+            "HeartDiseaseorAttack": "heartDiseaseOrAttack",
+            "PhysActivity": "physicalActivity",
+            "Fruits": "fruits",
+            "Veggies": "veggies",
+            "HvyAlcoholConsump": "heavyAlcoholConsumption",
+            "AnyHealthcare": "anyHealthCare",
+            "NoDocbcCost": "noDocBecauseOfCost",
+            "GenHlth": "generalHealthSelfAssessment",
+            "MentHlth": "mentalHealthIssues",
+            "PhysHlth": "physicalHealthIssues",
+            "DiffWalk": "difficultyWalking",
+            "Sex": "sex",
+            "Age": "age",
+            "Education": "education",
+            "Income": "income"
+        }
+        training_x.rename(columns=feature_map, inplace=True)
+        return training_x
 
 """
     def run(self, data):
