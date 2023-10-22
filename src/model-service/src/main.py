@@ -21,23 +21,23 @@ logger = structlog.get_logger()
 
 @app.post("/model")
 async def invoke(request: Request):
-	# clear the context variables for each request
-	clear_contextvars()
+    # clear the context variables for each request
+    clear_contextvars()
 
-	# get trace id and json data from request
-	trace = request.headers.get("trace")
-	data = await request.json()
+    # get trace id and json data from request
+    trace = request.headers.get("trace")
+    data = await request.json()
 
-	bind_contextvars(traceID=trace)
+    bind_contextvars(traceID=trace)
 
-	try:
-		result = ModelInference().predict(model_file="diabetes_model_1_0_0.md", data=data)
-		return Response(status_code=200, content=json.dumps(result, cls=NumPyEncoder))
-	except KeyError as ke:
-		logger.exception(f"Key {ke} not in request body")
-		raise HTTPException(status_code=400, detail=f"{str(ke)} not in request body")
+    try:
+        result = ModelInference().predict(model_file="diabetes_model_1_0_0.json", data=data)
+        return Response(status_code=200, content=json.dumps(result, cls=NumPyEncoder))
+    except KeyError as ke:
+        logger.exception(f"Key {ke} not in request body")
+        raise HTTPException(status_code=400, detail=f"{str(ke)} not in request body")
 
 
 @app.get("/ping")
 async def check():
-	return "Ingestion Service is up!"
+    return "Ingestion Service is up!"
