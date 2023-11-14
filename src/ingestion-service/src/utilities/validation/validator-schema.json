@@ -20,6 +20,13 @@
             "type": "integer",
             "minimum": 0,
             "maximum": 1
+            "type": "integer"
+        },
+        "highChol": {
+            "type": "integer"
+        },
+        "cholCheck": {
+            "type": "integer"
         },
         "bmi": {
             "type": "integer",
@@ -40,11 +47,19 @@
             "type": "integer",
             "minimum": 0,
             "maximum": 1
+            "type": "integer"
+        },
+        "stroke": {
+            "type": "integer"
+        },
+        "heartDiseaseOrAttack": {
+            "type": "integer"
         },
         "physicalActivity": {
             "type": "integer"
         },
         "fruits": {
+
             "type": "integer",
             "minimum": 0,
             "maximum": 1
@@ -68,6 +83,19 @@
             "type": "integer",
             "minimum": 0,
             "maximum": 1
+            "type": "integer"
+        },
+        "veggies": {
+            "type": "integer"
+        },
+        "heavyAlcoholConsumption": {
+            "type": "integer"
+        },
+        "anyHealthCare": {
+            "type": "integer"
+        },
+        "noDocBecauseOfCost": {
+            "type": "integer"
         },
         "generalHealthSelfAssessment": {
             "type": "integer",
@@ -93,6 +121,11 @@
             "type": "integer",
             "minimum": 0,
             "maximum": 1
+            "type": "integer"
+        },
+        "sex": {
+            "type": "integer"
+
         },
         "age": {
             "type": "integer",
