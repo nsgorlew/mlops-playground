@@ -1,5 +1,5 @@
 {
-    "title": "Ingestion Service Validation Schema"
+    "title": "Ingestion Service Validation Schema",
     "description": "asdf",
     "type": "object",
     "properties": {
@@ -7,13 +7,13 @@
             "type": "integer"
         },
         "highBP": {
-            "type": "boolean"
+            "type": "integer"
         },
         "highChol": {
-            "type": "boolean"
+            "type": "integer"
         },
         "cholCheck": {
-            "type": "boolean"
+            "type": "integer"
         },
         "bmi": {
             "type": "integer",
@@ -21,31 +21,31 @@
             "exclusiveMaximum": 60
         },
         "smoker": {
-            "type": "boolean"
+            "type": "integer"
         },
         "stroke": {
-            "type": "boolean"
+            "type": "integer"
         },
         "heartDiseaseOrAttack": {
-            "type": "boolean"
+            "type": "integer"
         },
         "physicalActivity": {
-            "type": "boolean"
+            "type": "integer"
         },
         "fruits": {
-            "type": "boolean"
+            "type": "integer"
         },
         "veggies": {
-            "type": "boolean"
+            "type": "integer"
         },
         "heavyAlcoholConsumption": {
-            "type": "boolean"
+            "type": "integer"
         },
         "anyHealthCare": {
-            "type": "boolean"
+            "type": "integer"
         },
         "noDocBecauseOfCost": {
-            "type": "boolean"
+            "type": "integer"
         },
         "generalHealthSelfAssessment": {
             "type": "integer",
@@ -63,10 +63,10 @@
             "maximum": 30
         },
         "difficultyWalking": {
-            "type": "boolean"
+            "type": "integer"
         },
         "sex": {
-            "type": "boolean"
+            "type": "integer"
         },
         "age": {
             "type": "integer",
@@ -82,30 +82,30 @@
             "type": "integer",
             "minimum": 1,
             "maximum": 8
-        },
-        "required": [
-            "appID",
-            "highBP",
-            "highChol",
-            "cholCheck",
-            "bmi",
-            "smoker",
-            "stroke",
-            "heartDiseaseOrAttack",
-            "physicalActivity",
-            "fruits",
-            "veggies",
-            "heavyAlcoholConsumption",
-            "anyHealthCare",
-            "noDocBecauseOfCost",
-            "generalHealthSelfAssessment",
-            "mentalHealthIssues",
-            "physicalHealthIssues",
-            "difficultyWalking",
-            "sex",
-            "age",
-            "education",
-            "income"
-        ]
-    }
+        }
+    },
+    "required": [
+        "appID",
+        "highBP",
+        "highChol",
+        "cholCheck",
+        "bmi",
+        "smoker",
+        "stroke",
+        "heartDiseaseOrAttack",
+        "physicalActivity",
+        "fruits",
+        "veggies",
+        "heavyAlcoholConsumption",
+        "anyHealthCare",
+        "noDocBecauseOfCost",
+        "generalHealthSelfAssessment",
+        "mentalHealthIssues",
+        "physicalHealthIssues",
+        "difficultyWalking",
+        "sex",
+        "age",
+        "education",
+        "income"
+    ]
 }
