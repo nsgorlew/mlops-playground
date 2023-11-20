@@ -1,8 +1,7 @@
+from preprocessing.preprocessor import Preprocessor
 from utilities.persistence import Persist
-import json
-import xgboost as xgb
+import joblib
 import os
-import numpy as np
 import structlog
 
 logger = structlog.get_logger()
@@ -35,12 +34,15 @@ class ModelInference:
 						"income"
 						]
 
-	def predict(self, model_file, data):
-		try: 
+	@staticmethod
+	def predict(model_file, data):
+		try:
 			model = ModelInference.load_model(f"{os.getcwd()}/{model_file}")
-			d_inf = xgb.DMatrix(np.array([[int(data[feature]) for feature in self.features]]))
-			prediction = model.predict(d_inf)
-			data["prediction"] = int(prediction[0])
+			cleaned_data = Preprocessor.clean_for_inference(data_dict=data, scalers_dir="C:/GitHub/mlops-playground/src/model-service/src/utilities/scalers")
+			prediction = model.predict(cleaned_data)
+			# log_prediction = model.predict_log_proba(cleaned_data)
+			data["prediction"] = prediction.tolist()
+			# data["log_prob"] = log_prediction.tolist()
 
 			logger.info("Persisting data...")
 			persistence_result = Persist.push(data, local=True)
@@ -54,6 +56,5 @@ class ModelInference:
 
 	@staticmethod
 	def load_model(model_path):
-		booster = xgb.Booster()
-		booster.load_model(model_path)
-		return booster
+		loaded_model = joblib.load(model_path)
+		return loaded_model

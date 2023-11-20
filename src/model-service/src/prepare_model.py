@@ -1,29 +1,52 @@
 from preprocessing.preprocessor import Preprocessor
-from sklearn.metrics import roc_auc_score
-import xgboost as xgb
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import recall_score, accuracy_score, precision_score, confusion_matrix, ConfusionMatrixDisplay
+# from sklearn.model_selection import RandomizedSearchCV
+import joblib
+import matplotlib.pyplot as plt
 import structlog
+
 
 logger = structlog.get_logger()
 
-X_train, X_test, y_train, y_test = Preprocessor.run()
-dtrain = xgb.DMatrix(X_train, label=y_train)
-deval = xgb.DMatrix(X_test, label=y_test)
+X_train, X_test, y_train, y_test = Preprocessor.run(model_version="1_0_0")
 
-params = {
-    'alpha': 0.5,
-    'objective': 'binary:logistic',
-    'max_depth': 10,
-    'learning_rate': 0.05,
+# model = KNeighborsClassifier(algorithm='brute', n_neighbors=4, weights='distance')
+model = RandomForestClassifier(n_estimators=200, max_depth=20)
+model.fit(X_train, y_train.values.ravel())
+
+# predict and score model
+y_pred = model.predict(X_test)
+
+
+# hyperparameter tuning
+"""
+param_grid = {
+    'n_neighbors': [4, 5, 6, 7, 8, 9, 10],
+    'weights': ['uniform', 'distance'],
+    'algorithm': ['auto', 'ball_tree', 'kd_tree', 'brute']
 }
+grid_search = RandomizedSearchCV(KNeighborsClassifier(),
+                                 param_distributions=param_grid)
+grid_search.fit(X_train, y_train.values.ravel())
+logger.info(f"best estimator: {grid_search.best_estimator_}")
+logger.info(f"best hyperparameters: {grid_search.best_params_}")
+"""
 
-num_round = 10
-model = xgb.train(params, dtrain)
+cm = confusion_matrix(y_test, y_pred, labels=[0, 1, 2])
+recall_loaded_model = recall_score(y_test, y_pred, labels=[0, 1, 2], average='macro')
+accuracy_loaded_model = accuracy_score(y_test, y_pred)
+precision_loaded_model = precision_score(y_test, y_pred, labels=[0, 1, 2], average='macro')
 
-y_pred = model.predict(deval)
-auc_loaded_model = roc_auc_score(y_test, y_pred)
-logger.info(f"AUC: {auc_loaded_model}")
+logger.info(f"Recall: {recall_loaded_model}")
+logger.info(f"Accuracy: {accuracy_loaded_model}")
+logger.info(f"Precision: {precision_loaded_model}")
 
 # persist model
-model_json = model.save_model('diabetes_model_1_0_0.json')
+model_json = joblib.dump(model, 'diabetes_classifier_1_0_0.sav')
 
 logger.info("Model Persisted")
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=[0, 1, 2])
+disp.plot()
+plt.show()
