@@ -7,6 +7,19 @@
             "type": "integer"
         },
         "highBP": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1
+        },
+        "highChol": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1
+        },
+        "cholCheck": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1
             "type": "integer"
         },
         "highChol": {
@@ -21,6 +34,19 @@
             "exclusiveMaximum": 60
         },
         "smoker": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1
+        },
+        "stroke": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1
+        },
+        "heartDiseaseOrAttack": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1
             "type": "integer"
         },
         "stroke": {
@@ -33,6 +59,30 @@
             "type": "integer"
         },
         "fruits": {
+
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1
+        },
+        "veggies": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1
+        },
+        "heavyAlcoholConsumption": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1
+        },
+        "anyHealthCare": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1
+        },
+        "noDocBecauseOfCost": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1
             "type": "integer"
         },
         "veggies": {
@@ -63,10 +113,19 @@
             "maximum": 30
         },
         "difficultyWalking": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1
+        },
+        "sex": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1
             "type": "integer"
         },
         "sex": {
             "type": "integer"
+
         },
         "age": {
             "type": "integer",

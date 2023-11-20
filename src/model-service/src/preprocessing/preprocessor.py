@@ -1,9 +1,15 @@
-# from sklearn.preprocessing import LabelEncoder
+from imblearn.over_sampling import SMOTE
+from imblearn.under_sampling import RandomUnderSampler
+from sklearn.decomposition import PCA
 from sklearn.model_selection import train_test_split
-from ucimlrepo import fetch_ucirepo
-
-# import polars as pl
+from sklearn.preprocessing import KBinsDiscretizer, MinMaxScaler
+import joblib
+import numpy as np
+import os
 import pandas as pd
+
+pd.set_option('display.max_columns', None)
+# pd.set_option('display.max_rows', None)
 
 
 class Preprocessor:
@@ -12,16 +18,86 @@ class Preprocessor:
         pass
 
     @staticmethod
-    def run():
-        cdc_diabetes_health_indicators = fetch_ucirepo(id=891) 
-          
-        X = Preprocessor.convert_feature_names(cdc_diabetes_health_indicators.data.features)
-        y = cdc_diabetes_health_indicators.data.targets
+    def run(model_version):
+        # cdc_diabetes_health_indicators = fetch_ucirepo(id=891)
+        # X = Preprocessor.convert_feature_names(cdc_diabetes_health_indicators.data.features)
+        # y = cdc_diabetes_health_indicators.data.targets
+        X = pd.read_csv("C:\GitHub\mlops-playground\src\model-service\src\preprocessing\diabetes_012_health_indicators_BRFSS2015.csv")
+        y = pd.read_csv("C:\GitHub\mlops-playground\src\model-service\src\preprocessing\diabetes_012_health_indicators_BRFSS2015.csv", usecols=["Diabetes_012"])
 
-        print(X.head)
+        X = Preprocessor.convert_feature_names(X)
+
+        # sampling to improve class imbalance and increase instances
+        X, y = Preprocessor.oversample(X, y)
+        X, y = Preprocessor.undersample(X, y)
+
+        X = Preprocessor.scale_columns(frame=X, columns=[
+            "physicalHealthIssues",
+            "age",
+            "bmi",
+            "mentalHealthIssues"
+        ]
+                                       )
+
+        # drop correlated features
+        X = Preprocessor.drop_extra_columns(frame=X,
+                                            drop_columns=[
+                                                "Diabetes_012"
+                                            ]
+                                            )
+
+        # X = Preprocessor.reduce(frame=X, num_components=10)
         # split into train and test
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-        return X_train.to_numpy(), X_test.to_numpy(), y_train.to_numpy(), y_test.to_numpy()
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+        # persist processed data
+        df_train = pd.concat([X_train, y_train], axis=1, join="inner")
+        df_train.to_json(path_or_buf=f"{os.getcwd()}/preprocessing/output/training_data_{model_version}.jsonl",
+                         orient="records",
+                         lines=True
+                         )
+        df_test = pd.concat([X_train, y_train], axis=1, join="inner")
+        df_test.to_json(path_or_buf=f"{os.getcwd()}/preprocessing/output/testing_data_{model_version}.jsonl",
+                        orient="records",
+                        lines=True
+                        )
+
+        return X_train, X_test, y_train, y_test
+
+    @staticmethod
+    def clean_for_inference(data_dict, scalers_dir):
+        frame = pd.DataFrame.from_dict([data_dict])
+
+        frame = Preprocessor.scale_columns_inference(frame=frame, columns=[
+            "physicalHealthIssues",
+            "age",
+            "bmi",
+            "mentalHealthIssues"
+        ],
+                                                     scalers_path=scalers_dir
+                                                     )
+
+        # drop appID
+        frame = Preprocessor.drop_extra_columns(frame=frame,
+                                                drop_columns=[
+                                                    "appID"
+                                                ]
+                                                )
+
+        return frame
+
+    @staticmethod
+    def scale_columns_inference(frame, columns, scalers_path):
+        for col in columns:
+            scaler = joblib.load(f"{scalers_path}/{col}_scaler.sav")
+            frame[col] = scaler.fit_transform([frame[col]])
+        return frame
+
+    @staticmethod
+    def discretize(frame, num_bins):
+        enc = KBinsDiscretizer(n_bins=num_bins, encode='ordinal', strategy='uniform')
+        frame_binned = enc.fit_transform(frame)
+        return frame_binned
 
     @staticmethod
     def convert_feature_names(training_x):
@@ -51,6 +127,100 @@ class Preprocessor:
         }
         training_x.rename(columns=feature_map, inplace=True)
         return training_x
+
+    @staticmethod
+    def drop_extra_columns(frame, drop_columns):
+        frame.drop(columns=drop_columns, inplace=True)
+        return frame
+
+    @staticmethod
+    def reduce(frame, num_components):
+        pca = PCA(n_components=num_components)
+        reduced = pca.fit_transform(frame)
+        joblib.dump(reduced, f"utilities/scalers/pca.sav")
+        return reduced
+
+    @staticmethod
+    def oversample(x_frame, y_frame):
+        smote = SMOTE(sampling_strategy={0: 213703, 1: 150000, 2: 150000})
+        x_frame, y_frame = smote.fit_resample(x_frame, y_frame)
+        return x_frame, y_frame
+
+    @staticmethod
+    def undersample(x_frame, y_frame):
+        under = RandomUnderSampler(sampling_strategy={0: 100000})
+        x_frame, y_frame = under.fit_resample(x_frame, y_frame)
+        return x_frame, y_frame
+
+    @staticmethod
+    def scale_columns(frame, columns):
+        # frame = frame.reshape(-1, 1)
+        for col in columns:
+            scaler = MinMaxScaler()
+            frame[col] = scaler.fit_transform(frame[col].values.reshape(-1, 1))
+            joblib.dump(scaler, f"utilities/scalers/{col}_scaler.sav")
+        return frame
+
+    @staticmethod
+    def bmi_to_discrete(frame):
+        # 0 is not obese, 1 is obese
+        conditions = {
+            0: frame["bmi"] < 30,
+            1: frame["bmi"] >= 30
+        }
+        frame["bmi"] = np.select(conditions.values(), conditions.keys(), default=frame["bmi"])
+        frame["bmi"].astype("int64")
+        return frame
+
+    @staticmethod
+    def mental_to_discrete(frame):
+        # 0 signifies no mental health events
+        conditions = {
+            0: frame["mentalHealthIssues"] == 0,
+            1: frame["mentalHealthIssues"] > 0
+        }
+        frame["mentalHealthIssues"] = np.select(conditions.values(), conditions.keys(), default=frame["mentalHealthIssues"])
+        return frame
+
+    @staticmethod
+    def age_to_discrete(frame):
+        # 0 signifies under 35
+        conditions = {
+            0: frame["age"] <= 3,
+            1: frame["age"] > 3
+        }
+        frame["mentalHealthIssues"] = np.select(conditions.values(), conditions.keys(), default=frame["mentalHealthIssues"])
+        return frame
+
+    @staticmethod
+    def health_to_discrete(frame):
+        # 1 signifies good health self assessment
+        conditions = {
+            0: frame["generalHealthSelfAssessment"] < 3,
+            1: frame["generalHealthSelfAssessment"] >= 3
+        }
+        frame["generalHealthSelfAssessment"] = np.select(conditions.values(), conditions.keys(), default=frame["generalHealthSelfAssessment"])
+        return frame
+
+    @staticmethod
+    def recent_physical_health_problem(frame):
+        # 1 signifies physical health problem in past 30 days
+        conditions = {
+            0: frame["physicalHealthIssues"] == 0,
+            1: frame["physicalHealthIssues"] > 0
+        }
+        frame["physicalHealthIssues"] = np.select(conditions.values(), conditions.keys(), default=frame["physicalHealthIssues"])
+        return frame
+
+    @staticmethod
+    def education_to_categorical(frame):
+        # 1 signifies at least high school graduate or equivalent
+        conditions = {
+            0: frame["education"] < 4,
+            1: frame["education"] >= 4
+        }
+        frame["education"] = np.select(conditions.values(), conditions.keys(), default=frame["education"])
+        return frame
 
 """
     def run(self, data):
