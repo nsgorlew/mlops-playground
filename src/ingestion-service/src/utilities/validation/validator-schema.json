@@ -19,7 +19,7 @@
         "cholCheck": {
             "type": "integer",
             "minimum": 0,
-            "maximum": 1
+            "maximum": 1,
             "type": "integer"
         },
         "highChol": {
@@ -46,7 +46,7 @@
         "heartDiseaseOrAttack": {
             "type": "integer",
             "minimum": 0,
-            "maximum": 1
+            "maximum": 1,
             "type": "integer"
         },
         "stroke": {
@@ -82,7 +82,7 @@
         "noDocBecauseOfCost": {
             "type": "integer",
             "minimum": 0,
-            "maximum": 1
+            "maximum": 1,
             "type": "integer"
         },
         "veggies": {
@@ -120,7 +120,7 @@
         "sex": {
             "type": "integer",
             "minimum": 0,
-            "maximum": 1
+            "maximum": 1,
             "type": "integer"
         },
         "sex": {

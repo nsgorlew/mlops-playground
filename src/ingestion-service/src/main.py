@@ -1,7 +1,6 @@
 from fastapi import Request, FastAPI, Response, HTTPException
-# from pydantic import BaseModel, Field, ValidationError
 from utilities.persistence import Persist
-from utilities.request_handling import RequestHandler
+
 import json
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
@@ -19,32 +18,7 @@ from structlog import configure
 app = FastAPI()
 
 configure(processors=[merge_contextvars, structlog.processors.JSONRenderer()])
-logger = structlog.get_logger()
-
-"""
-class RequestSchema(BaseModel):
-    appID: int = Field(gt=0)
-    highBP: bool
-    highChol: bool
-    bmi: int = Field(ge=10, lt=80)
-    smoker: bool
-    stroke: bool
-    heartDiseaseOrAttack: bool
-    physicalActivity: bool
-    fruits: bool
-    veggies: bool
-    heavyAlcoholConsumption: bool
-    anyHealthCare: bool
-    noDocBecauseOfCost: bool
-    generalHealthSelfAssessment: int = Field(ge=0, lt=6)
-    mentalHealthIssues: int = Field(ge=0, le=30)
-    physicalHealthIssues: int = Field(ge=0, le=30)
-    difficultyWalking: bool
-    sex: bool
-    age: int = Field(ge=0, lt=130)
-    education: int = Field(ge=1, le=6)
-    income: int = Field(ge=1, le=8)
-"""
+logger = structlog.get_logger(src="main.py")
 
 
 @app.post("/ingestion/invoke")
@@ -56,7 +30,7 @@ async def invoke(request: Request):
         trace = request.headers.get("trace")
         data = await request.json()
 
-        # validate the data against basemodel
+        # validate the data against the schema validation
         try:
             schema = json.load(open("C:/GitHub/mlops-playground/src/ingestion-service/src/utilities/validation/validator-schema.json"))
             validate(instance=data, schema=schema)
@@ -67,8 +41,11 @@ async def invoke(request: Request):
         # persist data in lake
         bind_contextvars(traceID=trace)
 
-        logger.info("Persisting data...")
-        persistence_result = Persist.push(data, local=True)
+        try:
+            logger.info("Persisting data...")
+            persistence_result = Persist.push(data, local=True)
+        except Exception as exc:
+            raise exc
         if not persistence_result:
             raise Exception
 
