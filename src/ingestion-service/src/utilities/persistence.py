@@ -30,9 +30,9 @@ class Persist:
 
         # using credentials for minio local server
         s3 = boto3.client("s3",
-                          endpoint_url="http://localhost:9000",
-                          aws_access_key_id="fPa43Tw12ozMPvHo78QO",
-                          aws_secret_access_key="q95TYfQvZH1PUFYaPftk5nbnP3TWl59MtXgyY6K8"
+                          endpoint_url=os.environ["ENDPOINT_URL"],
+                          aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
+                          aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"]
                           )
         s3.put_object(Body=json.dumps(data), Bucket=bucket, Key=key)
         return True
