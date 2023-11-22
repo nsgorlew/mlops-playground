@@ -3,13 +3,11 @@ from imblearn.under_sampling import RandomUnderSampler
 from sklearn.decomposition import PCA
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import KBinsDiscretizer, MinMaxScaler
+from utilities.persistence import Persist
+
 import joblib
 import numpy as np
-import os
 import pandas as pd
-
-pd.set_option('display.max_columns', None)
-# pd.set_option('display.max_rows', None)
 
 
 class Preprocessor:
@@ -19,11 +17,15 @@ class Preprocessor:
 
     @staticmethod
     def run(model_version):
-        # cdc_diabetes_health_indicators = fetch_ucirepo(id=891)
-        # X = Preprocessor.convert_feature_names(cdc_diabetes_health_indicators.data.features)
-        # y = cdc_diabetes_health_indicators.data.targets
-        X = pd.read_csv("C:\GitHub\mlops-playground\src\model-service\src\preprocessing\diabetes_012_health_indicators_BRFSS2015.csv")
-        y = pd.read_csv("C:\GitHub\mlops-playground\src\model-service\src\preprocessing\diabetes_012_health_indicators_BRFSS2015.csv", usecols=["Diabetes_012"])
+        X = pd.read_csv(Persist.pull(bucket=os.environ["S3_BUCKET"],
+                                     key="data/diabetes_012_health_indicators_BRFSS2015.csv"
+                                     )
+                        )
+        y = pd.read_csv(Persist.pull(bucket=os.environ["S3_BUCKET"],
+                                     key="data/diabetes_012_health_indicators_BRFSS2015.csv"
+                                     )
+                        , usecols=["Diabetes_012"]
+                        )
 
         X = Preprocessor.convert_feature_names(X)
 
@@ -52,15 +54,16 @@ class Preprocessor:
 
         # persist processed data
         df_train = pd.concat([X_train, y_train], axis=1, join="inner")
-        df_train.to_json(path_or_buf=f"{os.getcwd()}/preprocessing/output/training_data_{model_version}.jsonl",
-                         orient="records",
-                         lines=True
-                         )
+        Persist.push_training_testing_data(bucket=os.environ["S3_BUCKET"],
+                                           key=f"data/training_data_{model_version}.jsonl",
+                                           frame=df_train
+                                           )
+
         df_test = pd.concat([X_train, y_train], axis=1, join="inner")
-        df_test.to_json(path_or_buf=f"{os.getcwd()}/preprocessing/output/testing_data_{model_version}.jsonl",
-                        orient="records",
-                        lines=True
-                        )
+        Persist.push_training_testing_data(bucket=os.environ["S3_BUCKET"],
+                                           key=f"data/training_data_{model_version}.jsonl",
+                                           frame=df_test
+                                           )
 
         return X_train, X_test, y_train, y_test
 
