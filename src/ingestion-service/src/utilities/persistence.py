@@ -26,7 +26,7 @@ class Persist:
             return True
         """
         bucket = "mlops-playground"
-        key = f"/data/{data['appID']}_{datetime.now().strftime('%Y-%m-%d')}.json"
+        key = f"/{datetime.now().strftime('%Y-%m-%d')}/{data['appID']}.json"
 
         # using credentials for minio local server
         s3 = boto3.client("s3",
