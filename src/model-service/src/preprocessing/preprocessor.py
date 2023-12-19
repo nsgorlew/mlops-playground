@@ -17,11 +17,11 @@ class Preprocessor:
 
     @staticmethod
     def run(model_version):
-        X = pd.read_csv(Persist.pull(bucket="mlops-playground",
+        X = pd.read_csv(Persist.pull(bucket=os.environ["S3_BUCKET"],
                                      key="data/diabetes_012_health_indicators_BRFSS2015.csv"
                                      )
                         )
-        y = pd.read_csv(Persist.pull(bucket="mlops-playground",
+        y = pd.read_csv(Persist.pull(bucket=os.environ["S3_BUCKET"],
                                      key="data/diabetes_012_health_indicators_BRFSS2015.csv"
                                      )
                         , usecols=["Diabetes_012"]
@@ -54,13 +54,13 @@ class Preprocessor:
 
         # persist processed data
         df_train = pd.concat([X_train, y_train], axis=1, join="inner")
-        Persist.push_training_testing_data(bucket="mlops-playground",
+        Persist.push_training_testing_data(bucket=os.environ["S3_BUCKET"],
                                            key=f"data/training_data_{model_version}.jsonl",
                                            frame=df_train
                                            )
 
         df_test = pd.concat([X_train, y_train], axis=1, join="inner")
-        Persist.push_training_testing_data(bucket="mlops-playground",
+        Persist.push_training_testing_data(bucket=os.environ["S3_BUCKET"],
                                            key=f"data/training_data_{model_version}.jsonl",
                                            frame=df_test
                                            )
