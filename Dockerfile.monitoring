@@ -1,8 +1,8 @@
-FROM ubuntu:22.04
-WORKDIR ingestion-service/src/
+FROM python:3.11-slim
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
+WORKDIR src/monitoring-service/src
 ARG INGESTION-SERVICE-URL="http://localhost:8001/ingestion/"
 ARG MODEL-SERVICE-URL="http://localhost:8002/model/"
 EXPOSE 8003
