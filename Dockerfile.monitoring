@@ -3,7 +3,7 @@ WORKDIR ingestion-service/src/
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
-ARG MODEL-SERVICE-URL="http://localhost:8001/model/"
-ARG MONITORING-SERVICE-URL="http://localhost:8002/monitor/"
-EXPOSE 8001
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001"]
+ARG INGESTION-SERVICE-URL="http://localhost:8001/ingestion/"
+ARG MODEL-SERVICE-URL="http://localhost:8002/model/"
+EXPOSE 8003
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8003"]
