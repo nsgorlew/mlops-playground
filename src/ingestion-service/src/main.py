@@ -2,6 +2,8 @@ from fastapi import Request, FastAPI, Response, HTTPException
 from utilities.persistence import Persist
 
 import json
+import os
+import requests
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 import structlog
@@ -56,6 +58,27 @@ async def invoke(request: Request):
 
         return {"error": str(exc)}
     # TODO: send data to model service
+    try:
+        model_response = requests.post(
+            url=os.environ["MODEL-SERVICE-URL"],
+            data=data,
+            headers=None
+        )
+
+        return Response(
+            content=json.dumps(model_response),
+            status_code=200,
+            headers=None,
+            media_type="application/json"
+        )
+    except Exception as exc:
+        error = {"error details": str(exc)}
+        return Response(
+            content=json.dumps(error),
+            status_code=500,
+            media_type="application/json"
+        )
+
     return await request.json()
 
 
