@@ -3,6 +3,9 @@ from datetime import datetime, date
 import boto3
 import json
 import os
+import structlog
+
+logger = structlog.get_logger(src="persistence.py")
 
 
 class Persist:
@@ -30,9 +33,13 @@ class Persist:
 
         # using credentials for minio local server
         s3 = boto3.client("s3",
-                          endpoint_url=os.environ["ENDPOINT_URL"],
+                          endpoint_url=os.environ["LOCAL_S3_BUCKET_URL"],
                           aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
                           aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"]
                           )
-        s3.put_object(Body=json.dumps(data), Bucket=bucket, Key=key)
-        return True
+        response = s3.put_object(Body=json.dumps(data), Bucket=bucket, Key=key)
+        if response.status_code == 200:
+            logger.info(f"Data for {trace} persisted")
+            return True
+        else:
+            raise Exception
